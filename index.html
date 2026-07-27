@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sanad — Short-lived credentials for AI agents</title>
+<meta name="description" content="Sanad is an open-source gateway for MCP servers. It verifies who an agent is and who is accountable for it, mints passports that expire in minutes, and revokes everything in under sixty seconds.">
+<meta property="og:title" content="Sanad — Short-lived credentials for AI agents">
+<meta property="og:description" content="An open-source authorization gateway for MCP servers: passports instead of API keys, delegation that only narrows, and a kill switch that works.">
+<meta property="og:url" content="https://getsanad.dev">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2322C55E' stroke-width='2'%3E%3Cpath d='M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0F172A; --panel:#1E293B; --panel-2:#161F33; --fg:#F8FAFC; --fg-dim:#B6C2D6;
+    --accent:#22C55E; --accent-dim:#16A34A; --danger:#EF4444; --border:rgba(148,163,184,.18);
+    --mono:ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg); color:var(--fg);
+    font:400 16px/1.65 Inter,system-ui,-apple-system,'Segoe UI',sans-serif;
+    -webkit-font-smoothing:antialiased; min-height:100dvh;
+  }
+  a{color:inherit}
+  .wrap{max-width:720px;margin:0 auto;padding:0 24px}
+  header{padding:28px 0}
+  .top{display:flex;align-items:center;justify-content:space-between}
+  .mark{display:flex;align-items:center;gap:10px;font-weight:700;font-size:18px;letter-spacing:-.01em;text-decoration:none}
+  .mark svg{width:22px;height:22px;stroke:var(--accent)}
+  .gh{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:500;color:var(--fg-dim);
+      text-decoration:none;padding:8px 14px;border:1px solid var(--border);border-radius:8px;
+      transition:color .2s,border-color .2s;cursor:pointer}
+  .gh:hover{color:var(--fg);border-color:rgba(148,163,184,.4)}
+  .gh svg{width:16px;height:16px;fill:currentColor}
+  main{padding:56px 0 32px}
+  h1{font-size:clamp(34px,6vw,52px);line-height:1.12;font-weight:700;letter-spacing:-.025em}
+  .sub{margin:22px 0 0;font-size:19px;line-height:1.6;color:var(--fg-dim);max-width:58ch}
+  .sub strong{color:var(--fg);font-weight:600}
+  .cta-row{display:flex;flex-wrap:wrap;gap:14px;margin:34px 0 0;align-items:center}
+  .btn{display:inline-flex;align-items:center;gap:10px;background:var(--accent);color:#052E16;
+       font-weight:600;font-size:16px;padding:13px 22px;border-radius:10px;text-decoration:none;
+       transition:background .2s;cursor:pointer}
+  .btn:hover{background:#34D67A}
+  .btn svg{width:18px;height:18px;fill:currentColor}
+  .btn:focus-visible,.gh:focus-visible,a:focus-visible{outline:3px solid rgba(34,197,94,.6);outline-offset:2px;border-radius:8px}
+  .install{font:500 14px var(--mono);color:var(--fg-dim);background:var(--panel-2);
+           border:1px solid var(--border);border-radius:8px;padding:12px 16px}
+  .install span{color:var(--accent)}
+  .term{margin:56px 0 0;background:#0B1222;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .term-bar{display:flex;gap:6px;padding:12px 16px;border-bottom:1px solid var(--border)}
+  .term-bar i{width:10px;height:10px;border-radius:50%;background:#334155}
+  .term pre{padding:18px 20px 22px;font:400 13.5px/1.75 var(--mono);color:var(--fg-dim);overflow-x:auto}
+  .ok{color:var(--accent)} .bad{color:var(--danger)} .cmd{color:var(--fg)}
+  section.benefits{padding:64px 0 8px}
+  .b-grid{display:grid;gap:20px;grid-template-columns:1fr}
+  @media(min-width:768px){.b-grid{grid-template-columns:repeat(3,1fr)}}
+  .b-card{background:var(--panel-2);border:1px solid var(--border);border-radius:12px;padding:24px 22px}
+  .b-card svg{width:26px;height:26px;stroke:var(--accent);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .b-card h2{font-size:17px;font-weight:600;margin:14px 0 8px;letter-spacing:-.01em}
+  .b-card p{font-size:14.5px;color:var(--fg-dim);line-height:1.6}
+  .name{margin:64px 0 0;padding:28px 30px;background:var(--panel-2);border-left:3px solid var(--accent);border-radius:0 12px 12px 0}
+  .name p{color:var(--fg-dim);font-size:15.5px;line-height:1.7}
+  .name p em{color:var(--fg);font-style:normal;font-weight:600}
+  footer{margin-top:72px;padding:28px 0 44px;border-top:1px solid var(--border)}
+  .foot{display:flex;flex-wrap:wrap;gap:18px;align-items:center;justify-content:space-between;
+        font-size:14px;color:var(--fg-dim)}
+  .foot a{color:var(--fg-dim);text-decoration:none;transition:color .2s}
+  .foot a:hover{color:var(--fg)}
+  .foot-links{display:flex;gap:18px}
+  @media(prefers-reduced-motion:no-preference){
+    main>*,section.benefits,.name{animation:rise .5s ease-out both}
+    section.benefits{animation-delay:.08s}.name{animation-delay:.14s}
+    @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="top">
+      <a class="mark" href="/">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" aria-hidden="true"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z"/></svg>
+        Sanad
+      </a>
+      <a class="gh" href="https://github.com/getsanad/sanad">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+        GitHub
+      </a>
+    </div>
+  </header>
+
+  <main>
+    <h1>Short-lived credentials for AI&nbsp;agents.</h1>
+    <p class="sub">Sanad is an <strong>open-source gateway</strong> in front of your MCP servers. Every agent request is verified back to an <strong>accountable human</strong>, granted a passport that expires in minutes, and written to a tamper-evident log. When something goes wrong, you can <strong>kill all of it in under a minute</strong>.</p>
+
+    <div class="cta-row">
+      <a class="btn" href="https://github.com/getsanad/sanad">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+        View on GitHub
+      </a>
+      <code class="install"><span>$</span> npm i @getsanad/sdk</code>
+    </div>
+
+    <div class="term" role="img" aria-label="Terminal output of the Sanad demo: a passport is minted with narrowed scope, then the principal is revoked and the next request is denied.">
+      <div class="term-bar" aria-hidden="true"><i></i><i></i><i></i></div>
+      <pre><span class="cmd">$ make demo</span>
+<span class="ok">✓</span> principal verified          did:key:z6Mk…hR4w
+<span class="ok">✓</span> instance attested           blueprint payments-agent
+<span class="ok">✓</span> delegation chain valid      scope narrowed to [read]
+<span class="ok">→</span> passport minted             audience mcp/ledger · expires 120s
+<span class="cmd">$ sanad revoke --principal did:key:z6Mk…hR4w</span>
+<span class="bad">✗</span> next request DENIED         fail closed · 41s after revocation
+<span class="ok">→</span> audit trail                 action → agent → delegation → human</pre>
+    </div>
+  </main>
+
+  <section class="benefits">
+    <div class="b-grid">
+      <div class="b-card">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z"/><path d="M9 12l2 2 4-4"/></svg>
+        <h2>Passports, not standing keys</h2>
+        <p>Each request earns a credential scoped to one server and one task, expiring in seconds to minutes. The upstream server never sees your real keys.</p>
+      </div>
+      <div class="b-card">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3v12"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="6" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>
+        <h2>Delegation can only narrow</h2>
+        <p>Signed chains from human to agent to sub-agent. Every hop can hand over less authority than it holds, never more. The gateway rejects anything else.</p>
+      </div>
+      <div class="b-card">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><path d="M12 2v10"/></svg>
+        <h2>A kill switch that means it</h2>
+        <p>Revoke a principal and everything rooted in it loses access within a minute. Every decision lands in a tamper-evident audit log.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="name">
+    <p>In classical scholarship, a <em>sanad</em> is the chain of transmission that makes a claim trustworthy: who heard it from whom, back to the source. Sanad builds that chain for AI agents — from the accountable human, through every delegation, to the action taken.</p>
+  </div>
+
+  <footer>
+    <div class="foot">
+      <span>Apache-2.0. Built in the open.</span>
+      <span class="foot-links">
+        <a href="https://github.com/getsanad/sanad">GitHub</a>
+        <a href="https://www.npmjs.com/package/@getsanad/sdk">npm</a>
+        <a href="https://x.com/TPateeq">X</a>
+      </span>
+    </div>
+  </footer>
+</div>
+</body>
+</html>
