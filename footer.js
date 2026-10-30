@@ -1,4 +1,4 @@
-// Fills the footer copyright year.
+// Fills the footer copyright year on load.
 function setFooterYear(doc, now) {
   const el = doc.getElementById("yr");
   if (!el) return;
