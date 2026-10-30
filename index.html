@@ -145,7 +145,7 @@
 
   <footer>
     <div class="foot">
-      <span>Apache-2.0. Built in the open.</span>
+      <span>Apache-2.0. Built in the open. &copy; <span id="yr"></span></span>
       <span class="foot-links">
         <a href="https://github.com/getsanad/sanad">GitHub</a>
         <a href="https://www.npmjs.com/package/@getsanad/sdk">npm</a>
@@ -154,5 +154,6 @@
     </div>
   </footer>
 </div>
+<script>document.getElementById("yr").textContent = new Date().getFullYear();</script>
 </body>
 </html>
